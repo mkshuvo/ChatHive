@@ -1,0 +1,44 @@
+import request from 'supertest';
+import app from '../server/index';
+import { AppDataSource } from '../server/config/database';
+import { User } from '../server/entities/User';
+import bcrypt from 'bcryptjs';
+
+describe('User Registration', () => {
+  beforeEach(async () => {
+    await AppDataSource.initialize();
+  });
+
+  afterEach(async () => {
+    await AppDataSource.destroy();
+  });
+
+  it('should return 400 if username or password is missing', async () => {
+    const res = await request(app).post('/register').send({ username: 'test' });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Username and password are required');
+  });
+
+  it('should return 400 if user already exists', async () => {
+    const userRepository = AppDataSource.getRepository(User);
+    const existingUser = userRepository.create({ username: 'test', password: 'hashedPassword' });
+    await userRepository.save(existingUser);
+
+    const res = await request(app).post('/register').send({ username: 'test', password: 'password' });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('User already exists');
+  });
+
+  it('should return 201 if user is registered successfully', async () => {
+    const res = await request(app).post('/register').send({ username: 'test', password: 'password' });
+    expect(res.status).toBe(201);
+    expect(res.body.message).toBe('User registered successfully');
+  });
+
+  it('should return 500 if internal server error occurs', async () => {
+    jest.spyOn(bcrypt, 'hash').mockImplementationOnce(() => Promise.reject(new Error('Mocked error')));
+    const res = await request(app).post('/register').send({ username: 'test', password: 'password' });
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Internal server error');
+  });
+});
