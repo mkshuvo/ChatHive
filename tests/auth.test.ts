@@ -129,3 +129,51 @@ describe('User Registration', () => {
     expect(res.body.message).toBe('Internal server error');
   });
 });
+
+describe("User Login", () => {
+  const validUser = {
+    username: 'testuser',
+    email: 'test@example.com',
+    password: 'password123'
+  };
+
+  beforeEach(async () => {
+    // Create a new user before each login test
+    const userRepository = AppDataSource.getRepository(User);
+    const hashedPassword = await bcrypt.hash(validUser.password, 10);
+    const user = userRepository.create({
+      username: validUser.username,
+      email: validUser.email,
+      password: hashedPassword
+    });
+    await userRepository.save(user);
+  });
+
+  it("should return 200 and a token for valid credentials", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: validUser.email,
+      password: validUser.password,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("token");
+  });
+
+  it("should return 404 for non-existent user", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: "nonexistent@example.com",
+      password: validUser.password,
+    });
+
+    expect(response.status).toBe(404);
+  });
+
+  it("should return 401 for invalid password", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: validUser.email,
+      password: "invalidpassword",
+    });
+
+    expect(response.status).toBe(401);
+  });
+});

@@ -27,11 +27,11 @@ AppDataSource.initialize()
   .then(() => {
     console.log("Database connected");
     setupSocket(io);
-    
+
     const PORT = process.env.PORT || 4000;
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((error) => console.log(error));
-  export default app;
+export default app;

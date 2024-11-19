@@ -2,8 +2,42 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { User } from '../entities/User';
 import { AppDataSource } from '../config/database';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
+
+// POST /api/auth/login
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Email and password are required");
+  }
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOneBy({ email });
+    
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    if (!user.password) {
+      return res.status(400).send("Invalid user data");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).send("Invalid credentials");
+    }
+
+    const token = jwt.sign({ id: user.id }, "your_secret_key", { expiresIn: "1h" });
+
+    res.status(200).json({ token, user });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
