@@ -1,7 +1,6 @@
 "use client";
 
-import { User } from "@/types/chat";
-import { useChatStore } from "@/lib/store";
+import { useChatStore, User } from "@/lib/store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -10,38 +9,45 @@ interface UserListProps {
 }
 
 export function UserList({ users }: UserListProps) {
-  const { setActiveChat, activeChat } = useChatStore();
+  const { setActiveChat, activeChat, clearMessages } = useChatStore();
+
+  const handleUserSelect = (userId: string) => {
+    clearMessages(); // Clear previous chat messages
+    setActiveChat(userId);
+  };
 
   return (
-    <div className="w-80 border-r bg-card">
-      <div className="p-4 border-b">
-        <h2 className="text-xl font-semibold">Chats</h2>
+    <ScrollArea className="flex-1">
+      <div className="p-2">
+        {users.map((user) => (
+          <button
+            key={user.id}
+            onClick={() => handleUserSelect(user.id)}
+            className={`w-full flex items-center space-x-4 p-3 rounded-lg transition-colors ${
+              activeChat === user.id
+                ? "bg-accent"
+                : "hover:bg-accent/50"
+            }`}
+          >
+            <Avatar>
+              <AvatarImage src={user.avatarUrl} />
+              <AvatarFallback>
+                {user.username.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-left">
+              <p className="font-medium">{user.username}</p>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
+            </div>
+          </button>
+        ))}
+        
+        {users.length === 0 && (
+          <div className="p-4 text-center text-muted-foreground">
+            No users available to chat with
+          </div>
+        )}
       </div>
-      <ScrollArea className="h-[calc(100vh-73px)]">
-        <div className="p-2">
-          {users.map((user) => (
-            <button
-              key={user.id}
-              onClick={() => setActiveChat(user.id)}
-              className={`w-full flex items-center space-x-4 p-3 rounded-lg transition-colors ${
-                activeChat === user.id
-                  ? "bg-accent"
-                  : "hover:bg-accent/50"
-              }`}
-            >
-              <Avatar>
-                <AvatarImage src={user.avatarUrl} />
-                <AvatarFallback>
-                  {user.username.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-left">
-                <p className="font-medium">{user.username}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </ScrollArea>
-    </div>
+    </ScrollArea>
   );
 }

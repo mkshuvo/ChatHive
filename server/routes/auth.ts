@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { User } from '../entities/User';
 import { AppDataSource } from '../config/database';
 import jwt from 'jsonwebtoken';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -89,6 +90,38 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/auth/me - Get current user
+router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatarUrl: user.avatarUrl
+    });
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/logout - Logout (client-side token cleanup)
+router.post('/logout', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    // In a stateless JWT system, logout is handled client-side by removing the token
+    // This endpoint can be used for logging purposes or future token blacklisting
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Error during logout:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

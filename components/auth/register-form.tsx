@@ -40,23 +40,29 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:4000/api/auth/register", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Registration failed");
+        throw new Error(data.message || "Registration failed");
       }
 
-      const data = await response.json();
       localStorage.setItem("token", data.token);
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
+      });
       router.push("/chat");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Registration failed. Please try again.",
+        description: error.message || "Registration failed. Please try again.",
         variant: "destructive",
       });
     } finally {

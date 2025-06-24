@@ -5,6 +5,7 @@ import cors from "cors";
 import { AppDataSource } from "./config/database";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
+import chatRoutes from "./routes/chat";
 import { setupSocket } from "./socket/chat";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(cors({
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
