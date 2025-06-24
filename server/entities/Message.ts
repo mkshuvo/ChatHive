@@ -15,6 +15,9 @@ export class Message {
   @ManyToOne(() => User, user => user.messages)
   sender?: User;
 
+  @ManyToOne(() => User, user => user.receivedMessages)
+  receiver?: User;
+
   @Column("uuid")
   receiverId?: string;
 

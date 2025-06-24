@@ -23,6 +23,11 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connected");

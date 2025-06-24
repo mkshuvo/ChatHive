@@ -39,11 +39,17 @@ export const setupSocket = (io: Server) => {
       try {
         if (!socket.userId) return;
 
+        const receiver = await userRepository.findOneBy({ id: data.receiverId });
+        if (!receiver) {
+          socket.emit("error", "Receiver not found");
+          return;
+        }
+
         const message = messageRepository.create({
           content: data.content,
           mediaUrl: data.mediaUrl,
           sender: { id: socket.userId },
-          receiverId: data.receiverId,
+          receiver: receiver,
         });
 
         await messageRepository.save(message);

@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/server/types/chat";
+import { User } from "@/types/chat";
 import { useChatStore } from "@/lib/store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";

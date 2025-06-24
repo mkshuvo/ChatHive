@@ -5,7 +5,7 @@ import { UserList } from "./user-list";
 import { ChatWindow } from "./chat-window";
 import { io, Socket } from "socket.io-client";
 import { useChatStore } from "@/lib/store";
-import { User } from "@/server/types/chat";
+import { User } from "@/types/chat";
 
 let socket: Socket;
 
